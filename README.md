@@ -10,8 +10,8 @@ Tools:
   report. Keeping the model is $99 one-time; the report is free.
 - `nogpu_delete(job_id, claim_token)`: deletes the uploaded data now (otherwise deleted within 24 hours).
 
-Measured example (3,000 rows of the public Banking77 set, 77 intents): 58.7% answered alone, 94.7% accurate
-when it answered (lower bound 91.8%), about 4 ms per decision.
+Measured example (3,000 rows of the public Banking77 set, 77 intents): 66.7% answered alone, 94.1% accurate
+when it answered (lower bound 91.4%), about 4 ms per decision.
 
 Raw LLM logs (OpenAI, Anthropic, LangChain, LiteLLM, Langfuse shapes)? Convert them locally first with
 [nogpu_export.py](https://nogpu.dev/static/nogpu_export.py) (Python stdlib only).
