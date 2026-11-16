@@ -37,7 +37,7 @@ async function runReport(path, source = "file", { poll = 3000, timeout = 300000 
         gate: v.report.gate, bench: v.report.bench,
         checkout_url: v.checkout_url ? new URL(v.checkout_url, BASE).href : null,
         note: "share = fraction of decisions the CPU model answers alone; accuracy_when_sure and cp95_lower " +
-              "(one-sided 95% Clopper-Pearson) are measured on held-out rows. Data is deleted within 24h.",
+              "(one-sided 95% Clopper-Pearson) are measured on held-out rows. Data is deleted within 24h (24h after payment if you buy the model).",
       };
     }
   }
@@ -55,7 +55,7 @@ server.tool("nogpu_report",
     source: z.enum(["history", "logging", "file"]).optional()
       .describe("Where the rows came from: the app's stored history, rows logged by the collect snippet, or a given file (default)") },
   async ({ path, source = "file" }) => text(await runReport(path, source)));
-server.tool("nogpu_delete", "Delete an uploaded job's data now (otherwise deleted within 24h).",
+server.tool("nogpu_delete", "Delete an uploaded job's data now (otherwise deleted within 24h, or 24h after payment if you bought the model).",
   { job_id: z.string(), claim_token: z.string() },
   async ({ job_id, claim_token }) => {
     const { body } = await call(`${BASE}/api/jobs/${job_id}`, { method: "DELETE", headers: { "X-Claim-Token": claim_token } });

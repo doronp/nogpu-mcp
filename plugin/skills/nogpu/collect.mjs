@@ -24,15 +24,14 @@ function record(opts, name, text, label) {
     const { dir = '.nogpu', onRow } = opts || {}
     if (!text || typeof label !== 'string' || !label || label.length > 200) return
     name = name.replace(/[^\w-]/g, '_').slice(0, 60)
-    if (onRow) { Promise.resolve(onRow({ text, label }, name)).catch(() => {}); return }
-    const f = join(dir, `${name}.jsonl`)
-    let n = counts.get(f)
-    if (n === undefined) { try { n = readFileSync(f, 'utf8').split('\n').length - 1 } catch { n = 0 } }
+    const f = onRow ? `onRow:${name}` : join(dir, `${name}.jsonl`)
+    let n = counts.get(f)  // ponytail: with onRow the cap is per process (a serverless instance), not global
+    if (n === undefined) { try { n = onRow ? 0 : readFileSync(f, 'utf8').split('\n').length - 1 } catch { n = 0 } }
     if (n >= MAX) return
-    mkdirSync(dir, { recursive: true })
-    appendFileSync(f, JSON.stringify({ text, label }) + '\n')
+    if (onRow) Promise.resolve(onRow({ text, label }, name)).catch(() => {})
+    else { mkdirSync(dir, { recursive: true }); appendFileSync(f, JSON.stringify({ text, label }) + '\n') }
     counts.set(f, ++n)
-    if (MARKS.includes(n)) console.error(`nogpu: ${n} decisions in ${f}. Ask your coding agent for a free NoGPU report.`)
+    if (!onRow && MARKS.includes(n)) console.error(`nogpu: ${n} decisions in ${f}. Ask your coding agent for a free NoGPU report.`)
   } catch {}
 }
 

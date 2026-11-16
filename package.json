@@ -3,11 +3,27 @@
   "version": "0.1.0",
   "description": "MCP server: measure how many of your LLM's classification/routing decisions a CPU model can take alone (free NoGPU report).",
   "type": "module",
-  "bin": { "nogpu-mcp": "index.js" },
-  "files": ["index.js", "README.md"],
+  "bin": {
+    "nogpu-mcp": "index.js"
+  },
+  "files": [
+    "index.js",
+    "README.md"
+  ],
   "license": "MIT",
   "homepage": "https://nogpu.dev",
   "mcpName": "io.github.doronp/nogpu",
-  "engines": { "node": ">=18" },
-  "dependencies": { "@modelcontextprotocol/sdk": "1.32.2", "zod": "^3.25.0" }
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "ai": "7.0.173"
+  },
+  "scripts": {
+    "test": "node test/collect.test.mjs"
+  }
 }

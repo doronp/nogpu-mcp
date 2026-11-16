@@ -131,5 +131,8 @@ Ask before changing the app. Then add a logger at the call site so rows build up
       pass
   ```
 
-Add `.nogpu/` to `.gitignore`. Tell the user the AI SDK logger prints a line at 160 rows; then ask
+Add `.nogpu/` to `.gitignore`. Check the logger works before leaving it: run the app's own test or
+one real call, then count the lines in the `.nogpu/` file (it must have grown; print the count only).
+If it did not, the call site is not one the snippet recognises: log in the app's code instead, as for
+Python. Tell the user the AI SDK logger prints a line at 160 rows; then ask
 again ("get me a NoGPU report") and upload that file with `source: "logging"`.
