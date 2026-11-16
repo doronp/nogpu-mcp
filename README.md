@@ -4,8 +4,8 @@ MCP server that lets your agent measure, on your own data, how many of your LLM'
 routing decisions a small CPU model can take alone. It calls the free [NoGPU](https://nogpu.dev) report.
 
 Tools:
-- `nogpu_report(path)`: uploads a JSONL file (`{"text": ..., "label": ...}` per line, 40 to 10,000 rows,
-  at least 2 labels) and returns, in about a minute: the share the CPU model answers alone, its accuracy
+- `nogpu_report(path)`: uploads a file of `{"text": ..., "label": ...}` rows (JSONL, a JSON array, or a CSV with
+  text and label columns; 160 to 10,000 rows, at least 2 labels) and returns, in about a minute: the share the CPU model answers alone, its accuracy
   when it does with a one-sided 95% Clopper-Pearson lower bound (held-out rows), latency, and a link to the
   report. Keeping the model is $99 one-time; the report is free.
 - `nogpu_delete(job_id, claim_token)`: deletes the uploaded data now (otherwise deleted within 24 hours).
@@ -13,7 +13,7 @@ Tools:
 Measured example (3,000 rows of the public Banking77 set, 77 intents): 66.7% answered alone, 94.1% accurate
 when it answered (lower bound 91.4%), about 4 ms per decision.
 
-Raw LLM logs (OpenAI, Anthropic, LangChain, LiteLLM, Langfuse shapes)? Convert them locally first with
+Raw LLM logs (OpenAI, Anthropic, Langfuse, LangSmith, Helicone)? Convert them locally first with
 [nogpu_export.py](https://nogpu.dev/static/nogpu_export.py) (Python stdlib only).
 
 ## Install

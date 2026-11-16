@@ -46,11 +46,12 @@ async function runReport(path, { poll = 3000, timeout = 300000 } = {}) {
 
 const server = new McpServer({ name: "nogpu", version: "0.1.0" });
 server.tool("nogpu_report",
-  "Free report: upload a JSONL file of an LLM's past decisions ({\"text\": ..., \"label\": ...} per line, 40-10,000 rows, " +
+  "Free report: upload a file of an LLM's past decisions ({\"text\": ..., \"label\": ...} rows as JSONL, a JSON array, " +
+  "or a CSV with text and label columns; 160-10,000 rows, " +
   "at least 2 labels) and measure what share a small CPU model can answer alone, how accurate it is when it does " +
   "(with a 95% lower bound), and its latency. Takes about a minute. For raw LLM logs, first convert them locally with " +
   "https://nogpu.dev/static/nogpu_export.py. The returned report_url shows the report and a $99 option to keep the model.",
-  { path: z.string().describe("Absolute path to the JSONL file") },
+  { path: z.string().describe("Absolute path to the JSONL, JSON or CSV file") },
   async ({ path }) => text(await runReport(path)));
 server.tool("nogpu_delete", "Delete an uploaded job's data now (otherwise deleted within 24h).",
   { job_id: z.string(), claim_token: z.string() },
