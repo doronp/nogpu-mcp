@@ -1,0 +1,18 @@
+{
+  "name": "nogpu",
+  "version": "0.1.0",
+  "description": "One skill, /nogpu:nogpu, that finds the recurring LLM classification or routing call in your app, extracts its past decisions locally into nogpu.jsonl (printing only counts and the label histogram), and, after you say yes, runs the free NoGPU report on how many of them a small CPU model can take alone. With no stored history it adds a local logging snippet at the call site. Bundles the nogpu MCP server (npx nogpu-mcp@0.1.0). Uploads go to nogpu.dev only after you confirm, and are deleted within 24 hours.",
+  "author": {
+    "name": "doronp"
+  },
+  "homepage": "https://nogpu.dev",
+  "repository": "https://github.com/doronp/nogpu-mcp",
+  "license": "MIT",
+  "keywords": ["llm", "classification", "routing", "distillation", "cpu", "cost", "mcp"],
+  "mcpServers": {
+    "nogpu": {
+      "command": "npx",
+      "args": ["-y", "nogpu-mcp@0.1.0"]
+    }
+  }
+}

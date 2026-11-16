@@ -17,12 +17,12 @@ async function call(url, opts) {
 }
 const text = (o) => ({ content: [{ type: "text", text: typeof o === "string" ? o : JSON.stringify(o, null, 2) }] });
 
-async function runReport(path, { poll = 3000, timeout = 300000 } = {}) {
+async function runReport(path, source = "file", { poll = 3000, timeout = 300000 } = {}) {
   const size = (await stat(path)).size;  // the server takes at most 20 MB: don't read a huge log into memory
   if (size === 0 || size > 20 * 1024 * 1024) return { error: `file is ${size} bytes; upload 1 byte to 20 MB` };
   const form = new FormData();
   form.append("file", new Blob([await readFile(path)]), basename(path));
-  const { status, body: job } = await call(`${BASE}/api/jobs`, { method: "POST", body: form });
+  const { status, body: job } = await call(`${BASE}/api/jobs`, { method: "POST", body: form, headers: { "X-NoGPU-Source": source } });
   if (status !== 201) return { error: job.error || `upload failed (${status})` };
   const headers = { "X-Claim-Token": job.claim_token };
   for (const end = Date.now() + timeout; Date.now() < end; await new Promise((s) => setTimeout(s, poll))) {
@@ -51,8 +51,10 @@ server.tool("nogpu_report",
   "at least 2 labels) and measure what share a small CPU model can answer alone, how accurate it is when it does " +
   "(with a 95% lower bound), and its latency. Takes about a minute. For raw LLM logs, first convert them locally with " +
   "https://nogpu.dev/static/nogpu_export.py. The returned report_url shows the report and a $99 option to keep the model.",
-  { path: z.string().describe("Absolute path to the JSONL, JSON or CSV file") },
-  async ({ path }) => text(await runReport(path)));
+  { path: z.string().describe("Absolute path to the JSONL, JSON or CSV file"),
+    source: z.enum(["history", "logging", "file"]).optional()
+      .describe("Where the rows came from: the app's stored history, rows logged by the collect snippet, or a given file (default)") },
+  async ({ path, source = "file" }) => text(await runReport(path, source)));
 server.tool("nogpu_delete", "Delete an uploaded job's data now (otherwise deleted within 24h).",
   { job_id: z.string(), claim_token: z.string() },
   async ({ job_id, claim_token }) => {

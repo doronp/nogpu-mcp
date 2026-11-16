@@ -1,0 +1,13 @@
+{
+  "name": "nogpu",
+  "owner": {
+    "name": "doronp"
+  },
+  "description": "The NoGPU plugin for Claude Code: a skill that turns your app's past LLM classification decisions into a free NoGPU report, plus the nogpu MCP server.",
+  "plugins": [
+    {
+      "name": "nogpu",
+      "source": "./plugin"
+    }
+  ]
+}
