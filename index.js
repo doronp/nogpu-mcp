@@ -7,23 +7,33 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 
 const BASE = process.env.NOGPU_URL || "https://nogpu.dev";
+// Never throw out of a tool: a proxy's HTML error page, an empty body or a dropped connection
+// comes back as { status, body: { error } } like any other failure.
+async function call(url, opts) {
+  let r;
+  try { r = await fetch(url, opts); } catch (e) { return { status: 0, body: { error: `network error: ${e.message}` } }; }
+  try { return { status: r.status, body: await r.json() }; }
+  catch { return { status: r.status, body: { error: `unexpected response (HTTP ${r.status})` } }; }
+}
 const text = (o) => ({ content: [{ type: "text", text: typeof o === "string" ? o : JSON.stringify(o, null, 2) }] });
 
 async function runReport(path, { poll = 3000, timeout = 300000 } = {}) {
   const form = new FormData();
   form.append("file", new Blob([await readFile(path)]), basename(path));
-  const r = await fetch(`${BASE}/api/jobs`, { method: "POST", body: form });
-  const job = await r.json();
-  if (r.status !== 201) return { error: job.error || `upload failed (${r.status})` };
+  const { status, body: job } = await call(`${BASE}/api/jobs`, { method: "POST", body: form });
+  if (status !== 201) return { error: job.error || `upload failed (${status})` };
   const headers = { "X-Claim-Token": job.claim_token };
   for (const end = Date.now() + timeout; Date.now() < end; await new Promise((s) => setTimeout(s, poll))) {
-    const v = await (await fetch(`${BASE}/api/jobs/${job.job_id}`, { headers })).json();
+    const { status: code, body: v } = await call(`${BASE}/api/jobs/${job.job_id}`, { headers });
+    if (code === 403 || code === 404) return { error: v.error || "job not found", job_id: job.job_id };
+    if (code !== 200) continue;  // a blip: poll again until the timeout
     if (v.status === "failed") return { error: v.error || "job failed", job_id: job.job_id };
     if (v.report) {
       return {
         job_id: job.job_id, claim_token: job.claim_token,
         report_url: `${BASE}/job/${job.job_id}#${job.claim_token}`,
-        gate: v.report.gate, bench: v.report.bench, checkout_url: v.checkout_url ?? null,
+        gate: v.report.gate, bench: v.report.bench,
+        checkout_url: v.checkout_url ? new URL(v.checkout_url, BASE).href : null,
         note: "share = fraction of decisions the CPU model answers alone; accuracy_when_sure and cp95_lower " +
               "(one-sided 95% Clopper-Pearson) are measured on held-out rows. Data is deleted within 24h.",
       };
@@ -43,8 +53,8 @@ server.tool("nogpu_report",
 server.tool("nogpu_delete", "Delete an uploaded job's data now (otherwise deleted within 24h).",
   { job_id: z.string(), claim_token: z.string() },
   async ({ job_id, claim_token }) => {
-    const r = await fetch(`${BASE}/api/jobs/${job_id}`, { method: "DELETE", headers: { "X-Claim-Token": claim_token } });
-    return text(await r.json());
+    const { body } = await call(`${BASE}/api/jobs/${job_id}`, { method: "DELETE", headers: { "X-Claim-Token": claim_token } });
+    return text(body);
   });
 
 await server.connect(new StdioServerTransport());
