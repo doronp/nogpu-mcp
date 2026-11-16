@@ -9,7 +9,7 @@ Tools:
   when it does with a one-sided 95% Clopper-Pearson lower bound (held-out rows), latency, and a link to the
   report. Keeping the model is $99 one-time; the report is free. `source` (`history`, `logging` or `file`,
   the default) is sent as the `X-NoGPU-Source` header so NoGPU can count where reports come from.
-- `nogpu_delete(job_id, claim_token)`: deletes the uploaded data now (otherwise deleted within 24 hours).
+- `nogpu_delete(job_id, claim_token)`: deletes the uploaded data now (otherwise deleted within 24 hours; 24 hours after payment if you buy).
 
 Measured example (3,000 rows of the public Banking77 set, 77 intents): 66.7% answered alone, 94.1% accurate
 when it answered (lower bound 91.4%), about 4 ms per decision.
@@ -49,9 +49,12 @@ AI SDK, a few lines in other languages) so rows build up.
 
 - Uploaded: only the file you approve, `{"text", "label"}` rows, sent by `nogpu_report` (or `curl`) to
   `https://nogpu.dev/api/jobs`, used to train and test a CPU model for your report.
-- Nothing leaves your machine before you say yes: the skill shows the file path, row count and label
+- No row reaches nogpu.dev before you say yes: the skill shows the file path, row count and label
   histogram, and asks first. The logger and the extraction script only write local files.
-- Deleted within 24 hours, or at once with `nogpu_delete(job_id, claim_token)`.
+- Your coding agent's model provider sees what the agent reads, as always: code, schemas, counts and
+  label names. The skill tells the agent never to print row text.
+- Deleted within 24 hours (if you buy the model, within 24 hours of payment), or at once with
+  `nogpu_delete(job_id, claim_token)`.
 - The skill tells the agent to read schemas and counts and never print rows into the conversation. That is an
   instruction to the agent, not something the plugin enforces.
 
