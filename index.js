@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // NoGPU MCP server (stdio). Two tools over the public API documented at https://nogpu.dev/openapi.json.
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import { basename } from "node:path";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -18,6 +18,8 @@ async function call(url, opts) {
 const text = (o) => ({ content: [{ type: "text", text: typeof o === "string" ? o : JSON.stringify(o, null, 2) }] });
 
 async function runReport(path, { poll = 3000, timeout = 300000 } = {}) {
+  const size = (await stat(path)).size;  // the server takes at most 20 MB: don't read a huge log into memory
+  if (size === 0 || size > 20 * 1024 * 1024) return { error: `file is ${size} bytes; upload 1 byte to 20 MB` };
   const form = new FormData();
   form.append("file", new Blob([await readFile(path)]), basename(path));
   const { status, body: job } = await call(`${BASE}/api/jobs`, { method: "POST", body: form });
