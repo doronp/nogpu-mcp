@@ -19,8 +19,9 @@ The rows are the app's users' data, and anything you print enters this conversat
   or `less` on data, logs or `nogpu.jsonl`, no sample rows "to check the format". Use `COUNT(*)`,
   `GROUP BY`, `PRAGMA table_info`, `\d table`, ORM models, migrations and type definitions.
 - Labels can hold text too (a stray LLM reply stored in the label column). Before printing any
-  label, count the distinct labels and the longest label's length. More than 50 distinct labels:
-  stop, this is not a classification call. Print a label by name only if it has at least 3 rows
+  label, count the distinct labels and the longest label's length. More than 50 distinct labels
+  that are also more than 30% of the rows: stop, these look like free text, not a decision (77
+  intents over a few thousand rows is fine). Print a label by name only if it has at least 3 rows
   and at most 40 characters; fold the rest into one line, "N other labels (k rows)". This rule
   applies to every histogram and variant list below.
 - The extraction writes `nogpu.jsonl` on this machine and prints only the row count, the distinct
@@ -57,7 +58,9 @@ LiteLLM callbacks). Look at schemas and code, then count, e.g. `SELECT category,
   without the system prompt or few-shot examples.
 - Raw LLM logs or an observability export: convert them locally (stdlib Python, nothing is sent):
   `mkdir -p .nogpu && curl -sS -o .nogpu/nogpu_export.py https://nogpu.dev/static/nogpu_export.py &&
-  python3 .nogpu/nogpu_export.py <logs> > nogpu.jsonl`
+  python3 .nogpu/nogpu_export.py <logs> > nogpu.jsonl 2> .nogpu/export.log`
+  Its log can quote rare labels, so print only its `kept ...` and `next: ...` lines (grep), never
+  the whole log; then check `nogpu.jsonl` as in steps 3 and 4 (cap at 10,000 distinct rows).
   (`--input-field` / `--label-field` for unusual shapes). Always redirect its stdout to the file.
 - Nothing stored: go to step 6.
 
@@ -67,7 +70,8 @@ Write `nogpu_extract.<ext>` at the project root, in the app's language, using it
 driver or files, read-only. It must:
 - write `nogpu.jsonl` with one `{"text": ..., "label": ...}` object per line;
 - skip rows with empty text or label, and trim whitespace around labels;
-- keep at most 10,000 rows, the most recent;
+- drop repeats as it reads, newest first (a text, lowercased with whitespace collapsed, with the
+  same label counts once) and keep at most 10,000 distinct rows;
 - print only: rows written, distinct rows (a repeated text with the same label counts once; compare
   texts lowercased with whitespace collapsed), rows skipped by reason, the label histogram (privacy
   rule above), and the output's absolute path and size. Never a row.

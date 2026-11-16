@@ -19,18 +19,21 @@ const h8 = (o) => createHash('sha256').update(JSON.stringify(o)).digest('hex').s
 const textOf = (parts) => parts.map(p => p.type === 'text' ? p.text : p.type === 'json' ? JSON.stringify(p.value) : '')
   .filter(Boolean).join('\n').trim()
 
-function record({ dir = '.nogpu', onRow } = {}, name, text, label) {
-  if (!text || typeof label !== 'string' || !label || label.length > 200) return
-  name = name.replace(/[^\w-]/g, '_').slice(0, 60)
-  if (onRow) { try { Promise.resolve(onRow({ text, label }, name)).catch(() => {}) } catch {} return }
-  const f = join(dir, `${name}.jsonl`)
-  let n = counts.get(f)
-  if (n === undefined) { try { n = readFileSync(f, 'utf8').split('\n').length - 1 } catch { n = 0 } }
-  if (n >= MAX) return
-  mkdirSync(dir, { recursive: true })
-  appendFileSync(f, JSON.stringify({ text, label }) + '\n')
-  counts.set(f, ++n)
-  if (MARKS.includes(n)) console.error(`nogpu: ${n} decisions in ${f}. Ask your coding agent for a free NoGPU report.`)
+function record(opts, name, text, label) {
+  try { // logging never breaks the app's call (read-only or full disk, odd options)
+    const { dir = '.nogpu', onRow } = opts || {}
+    if (!text || typeof label !== 'string' || !label || label.length > 200) return
+    name = name.replace(/[^\w-]/g, '_').slice(0, 60)
+    if (onRow) { Promise.resolve(onRow({ text, label }, name)).catch(() => {}); return }
+    const f = join(dir, `${name}.jsonl`)
+    let n = counts.get(f)
+    if (n === undefined) { try { n = readFileSync(f, 'utf8').split('\n').length - 1 } catch { n = 0 } }
+    if (n >= MAX) return
+    mkdirSync(dir, { recursive: true })
+    appendFileSync(f, JSON.stringify({ text, label }) + '\n')
+    counts.set(f, ++n)
+    if (MARKS.includes(n)) console.error(`nogpu: ${n} decisions in ${f}. Ask your coding agent for a free NoGPU report.`)
+  } catch {}
 }
 
 /** Wrap a decision model (experimental_decide): every choice answer becomes a row for that question. */
