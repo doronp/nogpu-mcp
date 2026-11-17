@@ -38,7 +38,7 @@ claude plugin marketplace add doronp/nogpu-mcp
 claude plugin install nogpu@nogpu
 ```
 
-Then ask: "get me a NoGPU report for this app". The plugin adds this MCP server (`npx -y nogpu-mcp@0.1.0`)
+Then ask: "get me a NoGPU report for this app". The plugin adds this MCP server (`npx -y github:doronp/nogpu-mcp#v0.1.0`)
 and one skill. The skill has your coding agent find the recurring LLM classification call in your repo, follow
 its result to where the app already stores it (a database column, a log, an observability export), and write a
 local extraction script that creates `nogpu.jsonl` and prints only the row count and label histogram. With no
