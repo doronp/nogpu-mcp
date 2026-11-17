@@ -1,0 +1,95 @@
+name: Release .mcpb and publish to MCP Registry
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the release and upload the .mcpb asset
+      id-token: write # mcp-publisher login github-oidc
+    env:
+      MCP_PUBLISHER_VERSION: v1.8.7
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false # gh gets the token from GH_TOKEN; keep it out of .git/config
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+
+      - name: Versions must match the tag
+        run: |
+          set -euo pipefail
+          V="${GITHUB_REF_NAME#v}"
+          for f in package.json manifest.json server.json; do
+            test "$(jq -r .version "$f")" = "$V" || { echo "$f version is not $V"; exit 1; }
+          done
+          echo "V=$V" >> "$GITHUB_ENV"
+
+      - name: Test
+        run: npm ci --ignore-scripts && npm test
+
+      - name: Build .mcpb
+        run: |
+          set -euo pipefail
+          mkdir stage
+          cp index.js package.json package-lock.json manifest.json LICENSE README.md stage/
+          (cd stage && npm ci --omit=dev --ignore-scripts --no-audit --no-fund)
+          ./node_modules/.bin/mcpb validate stage/manifest.json
+          ./node_modules/.bin/mcpb pack stage "nogpu-mcp-${V}.mcpb"
+
+      - name: Create the release and upload the asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 \
+            || gh release create "$GITHUB_REF_NAME" --verify-tag --title "$GITHUB_REF_NAME" --notes "nogpu-mcp ${V}"
+          # On a re-run, keep the asset already on the release (and take its sha256): replacing it would leave a
+          # version the Registry already published pointing at a file with a different hash.
+          if gh release download "$GITHUB_REF_NAME" --pattern "nogpu-mcp-${V}.mcpb" --clobber; then
+            echo "nogpu-mcp-${V}.mcpb is already on the release: reusing it"
+          else
+            gh release upload "$GITHUB_REF_NAME" "nogpu-mcp-${V}.mcpb"
+          fi
+
+      - name: Pin asset URL and sha256 in server.json
+        run: |
+          set -euo pipefail
+          SHA="$(sha256sum "nogpu-mcp-${V}.mcpb" | cut -d' ' -f1)"
+          URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/nogpu-mcp-${V}.mcpb"
+          jq --arg u "$URL" --arg s "$SHA" \
+            '(.packages[] | select(.registryType == "mcpb")) |= (.identifier = $u | .fileSha256 = $s)' \
+            server.json > server.tmp && mv server.tmp server.json
+          cat server.json
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
+      - name: Download and verify mcp-publisher
+        run: |
+          set -euo pipefail
+          archive="mcp-publisher_linux_amd64.tar.gz"
+          base_url="https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}"
+          curl --fail --location --silent --show-error --output "$archive" "$base_url/$archive"
+          curl --fail --location --silent --show-error --output "$archive.sigstore.json" "$base_url/$archive.sigstore.json"
+          cosign verify-blob \
+            --bundle "$archive.sigstore.json" \
+            --certificate-identity "https://github.com/modelcontextprotocol/registry/.github/workflows/release.yml@refs/tags/${MCP_PUBLISHER_VERSION}" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            "$archive"
+          tar xzf "$archive" mcp-publisher
+          rm -f "$archive" "$archive.sigstore.json"
+
+      - name: Authenticate to MCP Registry
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish server to MCP Registry
+        run: ./mcp-publisher publish

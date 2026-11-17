@@ -50,7 +50,7 @@ async function runReport(path, source = "file", { calls_per_day, usd_per_1k_call
   return { error: "timed out waiting for the report", job_id: job.job_id, report_url };
 }
 
-const server = new McpServer({ name: "nogpu", version: "0.2.0" });
+const server = new McpServer({ name: "nogpu", version: "0.2.2" });
 server.tool("nogpu_report",
   "Free report: upload a file of an LLM's past decisions ({\"text\": ..., \"label\": ...} rows as JSONL, a JSON array, " +
   "or a CSV with text and label columns; 160-10,000 rows, " +

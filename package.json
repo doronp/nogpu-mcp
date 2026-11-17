@@ -1,6 +1,6 @@
 {
   "name": "nogpu-mcp",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "description": "MCP server: measure how many of your LLM's classification/routing decisions a CPU model can take alone (free NoGPU report).",
   "type": "module",
   "bin": {
@@ -21,6 +21,7 @@
     "zod": "^3.25.0"
   },
   "devDependencies": {
+    "@anthropic-ai/mcpb": "2.1.2",
     "ai": "7.0.173"
   },
   "scripts": {

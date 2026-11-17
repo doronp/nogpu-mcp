@@ -36,6 +36,12 @@ Any MCP client (Claude Desktop, Cursor, ...):
 
 Then ask your agent: "Run a NoGPU report on ./decisions.jsonl".
 
+## Hosted endpoint
+
+No install: point any MCP client at `https://nogpu.dev/mcp` (streamable HTTP). The hosted server cannot read
+your local files, so `nogpu_report` takes the rows inline. MCP Registry: `io.github.doronp/nogpu` (this remote
+and a `.mcpb` bundle from the GitHub release).
+
 ## As a Claude Code plugin
 
 ```bash

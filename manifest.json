@@ -1,0 +1,25 @@
+{
+  "manifest_version": "0.3",
+  "name": "nogpu-mcp",
+  "display_name": "NoGPU",
+  "version": "0.2.2",
+  "description": "Free report: how many of your LLM's classification calls a small CPU model can answer alone.",
+  "author": { "name": "doronp", "url": "https://github.com/doronp" },
+  "homepage": "https://nogpu.dev",
+  "repository": { "type": "git", "url": "https://github.com/doronp/nogpu-mcp" },
+  "support": "https://github.com/doronp/nogpu-mcp/issues",
+  "license": "MIT",
+  "privacy_policies": ["https://nogpu.dev/#privacy"],
+  "keywords": ["llm", "classification", "cost", "cpu", "distillation"],
+  "server": {
+    "type": "node",
+    "entry_point": "index.js",
+    "mcp_config": { "command": "node", "args": ["${__dirname}/index.js"] }
+  },
+  "tools": [
+    { "name": "nogpu_report", "description": "Upload a file of your LLM's decisions and get the free NoGPU report." },
+    { "name": "nogpu_buy", "description": "Read-only: the $99 offer to keep the model for a fit report; never pays." },
+    { "name": "nogpu_delete", "description": "Delete an uploaded job's data now." }
+  ],
+  "compatibility": { "platforms": ["darwin", "win32", "linux"], "runtimes": { "node": ">=18.0.0" } }
+}
