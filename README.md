@@ -11,6 +11,9 @@ Tools:
   upload and a new model); the report is free. `source` (`history`, `logging` or `file`, the default) is sent as the
   `X-NoGPU-Source` header so NoGPU can count where reports come from. `calls_per_day` and `usd_per_1k_calls` (your estimate)
   are added to the report link so its savings calculator starts from your numbers.
+- `nogpu_buy(job_id, claim_token)`: read-only, never pays. For a fit report it returns the $99 offer, the yes/no question
+  to ask you, a card checkout link for you to open, and the USDC (x402) payment details when the server offers them; for any
+  other job, the reason it can't be bought. The plugin's skill pays only after your explicit yes.
 - `nogpu_delete(job_id, claim_token)`: deletes the uploaded data now (otherwise deleted within 24 hours; 24 hours after payment if you buy).
 
 Measured example (3,000 rows of the public Banking77 set, 77 intents): 66.7% answered alone, matching the
@@ -40,7 +43,7 @@ claude plugin marketplace add doronp/nogpu-mcp
 claude plugin install nogpu@nogpu
 ```
 
-Then ask: "get me a NoGPU report for this app". The plugin adds this MCP server (`npx -y github:doronp/nogpu-mcp#v0.1.1`)
+Then ask: "get me a NoGPU report for this app". The plugin adds this MCP server (`npx -y github:doronp/nogpu-mcp#v0.2.0`)
 and one skill. The skill has your coding agent find the recurring LLM classification call in your repo, follow
 its result to where the app already stores it (a database column, a log, an observability export), and write a
 local extraction script that creates `nogpu.jsonl` and prints only the row count and label histogram. With no

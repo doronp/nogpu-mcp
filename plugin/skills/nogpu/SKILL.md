@@ -30,8 +30,12 @@ The rows are the app's users' data, and anything you print enters this conversat
   path and size.
 - Nothing leaves the machine until the user answers yes to the question in step 5. Never upload in
   the turn where you ask. In a non-interactive run, stop after asking.
+- Before writing, downloading or running anything in the project (the exporter, `nogpu_extract.*`,
+  `.gitignore` lines, a logger), show the plan in a few lines (what file, from where, what it reads,
+  that it prints counts only) and wait for one OK. That OK covers the local steps only; the upload
+  still needs its own yes in step 5.
 - Keep `nogpu.jsonl`, `nogpu_extract.*` and `.nogpu/` out of git: if the project is a git repo, add
-  them to `.gitignore`.
+  them to `.gitignore` (part of the plan above).
 - Code, schemas, counts and label names you read go to this coding agent's model provider, as
   everything in this conversation does; row text must not.
 
@@ -124,6 +128,14 @@ Then report:
   claim token), not `checkout_url`; if `checkout_url` is null, skip the $99 offer. End with: "After you
   buy, say 'install my NoGPU model': I'll download it with your claim token and put it in front of
   <file:line>, with <model> as the fallback."
+- Buying (fit only, after the $ sentence), when the user wants to keep the model: call `nogpu_buy` (it
+  never pays) and, if it is not buyable, give its `reason`. Otherwise show `ask_user` word for word
+  and stop; go on only on an explicit yes to $99 in this conversation. Then pay one way only (if both
+  are possible, let the user pick). Card: give the user the `card` link (never type card details).
+  USDC: only if `usdc` is set and the user has an x402 wallet tool, pay `usdc.url` with a max payment
+  of exactly 99 USDC for this one call (Coinbase Wallet MCP: `initiate_x402_request(url,
+  method: "POST", maxPayment: "99")`); never raise a wallet's cap permanently. If the wallet refuses
+  (e.g. a $5 cap), stop and offer the card link. Then go to step 7.
 - `verdict` "not_fit": start with "Not a fit on this data yet". Give the share and the bound against
   the bar (`gate.bar`) and, if `gate.n_sure_needed` is set, roughly how many rows would clear it
   (`n_sure_needed` × `data.n_rows` / `gate.n_sure`, rounded up). Offer the step 6 logger. Never call it
