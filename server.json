@@ -9,7 +9,7 @@
     "source": "github",
     "id": "1458566697"
   },
-  "version": "0.2.2",
+  "version": "0.2.3",
   "remotes": [
     {
       "type": "streamable-http",
@@ -19,7 +19,7 @@
   "packages": [
     {
       "registryType": "mcpb",
-      "identifier": "https://github.com/doronp/nogpu-mcp/releases/download/v0.2.2/nogpu-mcp-0.2.2.mcpb",
+      "identifier": "https://github.com/doronp/nogpu-mcp/releases/download/v0.2.3/nogpu-mcp-0.2.3.mcpb",
       "fileSha256": "0000000000000000000000000000000000000000000000000000000000000000",
       "transport": {
         "type": "stdio"

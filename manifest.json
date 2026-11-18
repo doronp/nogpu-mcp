@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "nogpu-mcp",
   "display_name": "NoGPU",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Free report: how many of your LLM's classification calls a small CPU model can answer alone.",
   "author": { "name": "doronp", "url": "https://github.com/doronp" },
   "homepage": "https://nogpu.dev",

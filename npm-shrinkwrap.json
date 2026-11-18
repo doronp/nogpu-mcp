@@ -1,16 +1,16 @@
 {
   "name": "nogpu-mcp",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "lockfileVersion": 3,
   "requires": true,
   "packages": {
     "": {
       "name": "nogpu-mcp",
-      "version": "0.2.2",
+      "version": "0.2.3",
       "license": "MIT",
       "dependencies": {
         "@modelcontextprotocol/sdk": "1.32.2",
-        "zod": "^3.25.0"
+        "zod": "3.25.76"
       },
       "bin": {
         "nogpu-mcp": "index.js"
