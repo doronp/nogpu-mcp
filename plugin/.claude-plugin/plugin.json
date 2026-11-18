@@ -1,7 +1,7 @@
 {
   "name": "nogpu",
-  "version": "0.2.1",
-  "description": "One skill, /nogpu:nogpu, that finds the recurring LLM classification or routing call in your app, extracts its past decisions locally into nogpu.jsonl (printing only counts and the label histogram), and, after you say yes, runs the free NoGPU report on how many of them a small CPU model can take alone. With no stored history it asks before adding a local logging snippet at the call site. Runs the nogpu MCP server with npx from github:doronp/nogpu-mcp pinned to commit 8735660. Uploads go to nogpu.dev only after you confirm, and are deleted within 24 hours (24 hours after payment if you buy the model).",
+  "version": "0.2.3",
+  "description": "One skill, /nogpu:nogpu, that finds the recurring LLM classification or routing call in your app, extracts its past decisions locally into nogpu.jsonl (printing only counts and the label histogram), and, after you say yes, runs the free NoGPU report on how many of them a small CPU model can take alone. With no stored history it asks before adding a local logging snippet at the call site. Runs the nogpu MCP server with npx from github:doronp/nogpu-mcp pinned to commit 8aef201. The log converter ships inside the plugin. Uploads go to nogpu.dev only after you confirm, and are deleted within 24 hours (24 hours after payment if you buy the model).",
   "author": {
     "name": "doronp"
   },
@@ -22,7 +22,7 @@
       "command": "npx",
       "args": [
         "-y",
-        "github:doronp/nogpu-mcp#8735660787bcd6838cc2848c4dfd6f10d425c23e"
+        "github:doronp/nogpu-mcp#8aef20143c85e240aabde3280793f90aacda242c"
       ]
     }
   }

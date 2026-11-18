@@ -40,7 +40,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir stage
-          cp index.js package.json package-lock.json manifest.json LICENSE README.md stage/
+          cp index.js package.json npm-shrinkwrap.json manifest.json LICENSE README.md stage/
           (cd stage && npm ci --omit=dev --ignore-scripts --no-audit --no-fund)
           ./node_modules/.bin/mcpb validate stage/manifest.json
           ./node_modules/.bin/mcpb pack stage "nogpu-mcp-${V}.mcpb"
